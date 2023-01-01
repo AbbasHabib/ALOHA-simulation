@@ -4,10 +4,36 @@ const PacketState = {
     IN_PROGRESS_COLLIDED: 2
 }
 
+const SimulateState={
+    IN_PROGRESS : 0,
+    STOPPED: 1
+}
+
 TRANSMIT_PROBABILITY=60;
 FRAME_TIME_STEPS=3;
 WAIT_TIME_MILLI_SEC=500;
 TIME_LINE_SLOTS=70;
+
+
+SIMULATION_STATE = SimulateState.STOPPED;
+
+
+const fact=(x)=>{
+    if(x==0) {
+       return 1;
+    }
+    return x * fact(x-1);
+ }
+
+const poisson =(k, lamda)=>{
+    var exponential = 2.718281828;
+    exponentialPower = Math.pow(exponential, -lamda);
+    landaPowerK = Math.pow(lamda, k);
+    numerator = exponentialPower * landaPowerK;
+    denominator = fact(k);
+
+    return (numerator / denominator);
+}
 
 
 class ViewController{
@@ -28,9 +54,11 @@ class ViewController{
             line += `<td></td>`;
         }
 
+
         this.#stations.forEach((st)=>{
             let transmission_line = `<tr id="transmission_line${st.getId()}">
             ${line}
+            <td id="left_packets${st.getId()}"></td>
             </tr>`
             this.#transmissionLinesView.innerHTML += transmission_line;
         });
@@ -60,6 +88,8 @@ class ViewController{
                 else{
                     slot.style.backgroundColor = "grey";
                 }
+                let inProgressPackets = document.querySelector(`#left_packets${st.getId()}`);
+                inProgressPackets.innerText = st.getNoOfQueuedPackets()
             });
         });
     }
@@ -71,7 +101,9 @@ class Station{
     #propagatedFrame
     #transmissionLineData;
     #packetState;
-    constructor(stationId, transmissionLineSize){
+    #noOfQueuedPackets;
+    constructor(stationId, transmissionLineSize, noOfQueuedPackets){
+        this.#noOfQueuedPackets = noOfQueuedPackets;
         this.#delayBeforeSending=Math.floor(Math.random() * TRANSMIT_PROBABILITY);
         this.#stationId = stationId;
         this.#propagatedFrame=0;
@@ -81,6 +113,10 @@ class Station{
 
     isAvailableToSend(){
         return (!this.isTransmitting() && this.isBackOffTimeOver())
+    }
+
+    getNoOfQueuedPackets(){
+        return this.#noOfQueuedPackets;
     }
 
     countTimeStep(){
@@ -122,7 +158,6 @@ class Station{
             else{
                 // when timer is over reset it
                 this.#delayBeforeSending=Math.floor(Math.random() * TRANSMIT_PROBABILITY);
-
             }
     }
 
@@ -134,7 +169,9 @@ class Station{
     }
     setPacketStateToCollided(){
         this.#packetState =  PacketState.IN_PROGRESS_COLLIDED;
-        this.#markPreviousFrameSlotsAsCollided()
+        // revert packet withdrawl
+        this.#noOfQueuedPackets += 1;
+        this.#markPreviousFrameSlotsAsCollided();
     }
 
     #markPreviousFrameSlotsAsCollided(){
@@ -148,7 +185,8 @@ class Station{
         return (this.#packetState === PacketState.IN_PROGRESS || this.#packetState === PacketState.IN_PROGRESS_COLLIDED)
     }
 
-    sendFrame(){
+    transmitPacket(){
+        this.#noOfQueuedPackets -= 1;
         this.#propagatedFrame = FRAME_TIME_STEPS;
         this.#packetState = PacketState.IN_PROGRESS;
     }
@@ -167,13 +205,13 @@ const shiftArray =(arr)=> {
     return arr.map((_, i, a) => a[(i + a.length - 1) % a.length]);
 }
 
-const createNstation = (stations, n, lineSize) =>{
+const createNstation =(stations, n, noPackets,lineSize)=>{
     for(let id = 1; id <= n; id++){
-        stations.push(new Station(stationId=id, transmissionLineSize=lineSize))
+        stations.push(new Station(stationId=id, transmissionLineSize=lineSize,noOfQueuedPackets = noPackets))
     }
 }
 
-const sleep = (ms) => {
+const sleep =(ms)=> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -182,14 +220,14 @@ const simulateStations = (stations, viewController) =>{
     totalCollisions = 0;
     totalAttempts = 0;
     (async () => {
-    while(true){
+    while(SIMULATION_STATE === SimulateState.IN_PROGRESS){
         collisions=0;
         transmittingStationsAtCurrentTime = [];
 
         // for each station check if the have a packet to send
         stations.forEach((st)=>{
             if(st.isAvailableToSend()){
-                st.sendFrame();
+                st.transmitPacket();
                 totalAttempts+=1;
             }
 
@@ -222,18 +260,19 @@ const simulateStations = (stations, viewController) =>{
         waitingTime = WAIT_TIME_MILLI_SEC;
         await sleep(waitingTime);
     }})()
-
 }
 
 
-const begin =()=> {
+const begin =(noStations, lambda, transmit_probability = TRANSMIT_PROBABILITY, fame_size= FRAME_TIME_STEPS, transmissionSpeed = WAIT_TIME_MILLI_SEC)=> {
 
     let stations = [];
 
-    createNstation(stations=stations, n=10, lineSize=TIME_LINE_SLOTS);
+    // createNstation(stations=stations, n=noStations, noPackets=poisson(noStations, 0.2),lineSize=TIME_LINE_SLOTS);
+    createNstation(stations=stations, n=noStations, noPackets=1000,lineSize=TIME_LINE_SLOTS);
 
     // console.log(stations);
 
+    SIMULATION_STATE = SimulateState.IN_PROGRESS;
     viewController = new ViewController(stations);
 
     viewController.generateTransmissionLine(lineSize=TIME_LINE_SLOTS);
@@ -242,5 +281,26 @@ const begin =()=> {
     simulateStations(stations, viewController);
 
 }
-// fun1()
-begin();
+
+
+const update =()=>{
+    SIMULATION_STATE = SimulateState.STOPPED;
+    (async () => {
+        await sleep(WAIT_TIME_MILLI_SEC + WAIT_TIME_MILLI_SEC + 1000);
+        SIMULATION_STATE = SimulateState.IN_PROGRESS;
+
+        FRAME_TIME_STEPS = parseInt(document.getElementById("frame_size"));
+        TRANSMIT_PROBABILITY = parseInt(document.getElementById("max_time"));
+        lambda = parseInt(document.getElementById("lambda"));
+        noStations = parseInt(document.getElementById("no_stations"));
+        WAIT_TIME_MILLI_SEC = parseInt(document.getElementById("trns_speed"));
+
+        begin(6);
+    })();
+
+
+
+
+}
+
+begin(6);

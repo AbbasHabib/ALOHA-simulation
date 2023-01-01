@@ -35,17 +35,22 @@ table.tranmissionTable td, table.tranmissionTable th {
 
 .container_bottom .container_bottom_left{
     background: red;
-    /* display: inline-block; */
 }
 
 .container_bottom .container_bottom_right{
     background: yellow;
-    /* display: inline-block; */
-
 }
-
 
 .numbers h1{
     display: inline-block;
     padding: 5px;
+}
+
+.container_bottom .container_bottom_right button{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 90px;
+    height: 40px;
+    justify-self: center;
 }

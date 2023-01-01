@@ -36,25 +36,29 @@
             </div>
             <div class="container_bottom_right">
                 <div class="numbers">
-                    <h1>transfer speed: </h1><input type="text" id="fname" name="fname">
+                    <h1>transfer speed: </h1><input type="text" value="500" id="trns_speed" name="fname"><h1>ms</h1>
                 </div>
 
                 <div class="numbers">
-                    <h1>lambda: </h1><input type="text" id="fname" name="fname">
+                    <h1>number of stations: </h1><input type="text" value="6" id="no_stations" name="fname">
                 </div>
 
                 <div class="numbers">
-                    <h1>time delay from : to </h1>
-                    <input type="text" id="fname" name="fname">
+                    <h1>lambda: </h1><input type="text" value="6" id="lambda" name="fname">
+                </div>
+
+                <div class="numbers">
+                    <h1>wait time random from : to </h1>
+                    <input type="text" value="0" id="fname" name="fname">
                     <h1>:</h1>
-                    <input type="text" id="fname" name="fname">
+                    <input type="text" value="60" id="max_time" name="fname">
                 </div>
 
                 <div class="numbers">
-                    <h1>frame size :</h1><input type="text" id="fname" name="fname">
+                    <h1>frame size :</h1><input value="3" type="text" id="frame_size" name="fname">
                 </div>
 
-                <button type="button">Update</button>
+                <button type="button" onclick="update()">Update</button>
             </div>
         </div>
 
