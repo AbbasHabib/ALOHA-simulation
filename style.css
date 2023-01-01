@@ -1,0 +1,6 @@
+table.tranmissionTable {
+    border-collapse: collapse;
+}
+table.tranmissionTable td, table.unstyledTable th {
+    border: 2px solid #000000;
+}
