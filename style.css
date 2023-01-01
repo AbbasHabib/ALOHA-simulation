@@ -1,6 +1,51 @@
 table.tranmissionTable {
     border-collapse: collapse;
 }
-table.tranmissionTable td, table.unstyledTable th {
-    border: 2px solid #000000;
+table.tranmissionTable td, table.tranmissionTable th {
+    border: 1px solid #000000;
+    width: 30px;
+    height: 20px;
+}
+
+.container{
+    margin: auto;
+    width: 80%;
+    /* height: 500px; */
+    border: 3px solid green;;
+}
+.container_top{
+    position: relative;
+    margin: auto;
+    width: 100%;
+    background-color: yellow;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tranmissionTable{
+    padding: 10px;
+
+}
+
+.container_bottom{
+    display: flex;
+    justify-content: space-between;
+}
+
+.container_bottom .container_bottom_left{
+    background: red;
+    /* display: inline-block; */
+}
+
+.container_bottom .container_bottom_right{
+    background: yellow;
+    /* display: inline-block; */
+
+}
+
+
+.numbers h1{
+    display: inline-block;
+    padding: 5px;
 }

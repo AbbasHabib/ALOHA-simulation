@@ -4,8 +4,10 @@ const PacketState = {
     IN_PROGRESS_COLLIDED: 2
 }
 
-TRANSMIT_PROBABILITY=20;
+TRANSMIT_PROBABILITY=60;
 FRAME_TIME_STEPS=3;
+WAIT_TIME_MILLI_SEC=500;
+TIME_LINE_SLOTS=70;
 
 
 class ViewController{
@@ -23,7 +25,7 @@ class ViewController{
             this.#transmissionLinesView.innerHTML = "";
         }
         for(let i=0 ; i < lineSize; i++){
-            line += `<td>h</td>`;
+            line += `<td></td>`;
         }
 
         this.#stations.forEach((st)=>{
@@ -34,27 +36,32 @@ class ViewController{
         });
     }
 
+    updateCollisionAndSuccessCount(collisionCount, successCount){
+        document.getElementById("collisions_count").innerText = collisionCount.toString();
+        document.getElementById("success_count").innerText = successCount.toString();
+        let totalCount = (successCount + collisionCount);
+        document.getElementById("total_count").innerText = totalCount.toString();
+
+        if(totalCount != 0)
+            document.getElementById("efficiency").innerText = Math.round(successCount / totalCount * 100.0).toFixed(5).toString();
+    }
+
+
     updateTransmissionLineView(){
         this.#stations.forEach((st)=>{
-
             st.getTransmissionLineData().forEach((packetSlot, index)=>{
                 let slot = document.querySelector(`#transmission_line${st.getId()} td:nth-child(${index+1})`);
-                if(slot){
-                    if(packetSlot == PacketState.IN_PROGRESS_COLLIDED){
-                        slot.style.backgroundColor = "red";
-                    }
-                    else if(packetSlot == PacketState.IN_PROGRESS){
-                        slot.style.backgroundColor = "green";
-                    }
-                    else{
-                        slot.style.backgroundColor = "grey";
-                    }
+                if(packetSlot == PacketState.IN_PROGRESS_COLLIDED){
+                    slot.style.backgroundColor = "red";
+                }
+                else if(packetSlot == PacketState.IN_PROGRESS){
+                    slot.style.backgroundColor = "green";
+                }
+                else{
+                    slot.style.backgroundColor = "grey";
                 }
             });
-
         });
-
-
     }
 }
 
@@ -173,10 +180,9 @@ const sleep = (ms) => {
 
 const simulateStations = (stations, viewController) =>{
     totalCollisions = 0;
-
+    totalAttempts = 0;
     (async () => {
     while(true){
-        await sleep(500);
         collisions=0;
         transmittingStationsAtCurrentTime = [];
 
@@ -184,6 +190,7 @@ const simulateStations = (stations, viewController) =>{
         stations.forEach((st)=>{
             if(st.isAvailableToSend()){
                 st.sendFrame();
+                totalAttempts+=1;
             }
 
             if(st.isTransmitting()){
@@ -211,8 +218,9 @@ const simulateStations = (stations, viewController) =>{
 
         totalCollisions += collisions;
         viewController.updateTransmissionLineView()
-        console.log("update!!!")
-        await sleep(500);
+        viewController.updateCollisionAndSuccessCount(collisionCount = totalCollisions, successCount = totalAttempts - collisionCount);
+        waitingTime = WAIT_TIME_MILLI_SEC;
+        await sleep(waitingTime);
     }})()
 
 }
@@ -222,13 +230,13 @@ const begin =()=> {
 
     let stations = [];
 
-    createNstation(stations=stations, n=3, lineSize=30);
+    createNstation(stations=stations, n=10, lineSize=TIME_LINE_SLOTS);
 
     // console.log(stations);
 
     viewController = new ViewController(stations);
 
-    viewController.generateTransmissionLine(lineSize=30);
+    viewController.generateTransmissionLine(lineSize=TIME_LINE_SLOTS);
     viewController.updateTransmissionLineView();
 
     simulateStations(stations, viewController);

@@ -10,12 +10,54 @@
 </head>
 <body>
     <div class="container">
+        <div class="container_top">
+            <table class="tranmissionTable">
+                <tbody id="transmissionLines">
+                </tbody>
+            </table>
+        </div>
+        <div class="container_bottom">
+            <div class="container_bottom_left">
+                <div class="numbers">
+                    <h1>Number of collisions: </h1><h1 id="collisions_count">0</h1>
+                </div>
 
-        <table class="tranmissionTable">
-            <tbody id="transmissionLines">
-            </tbody>
+                <div class="numbers">
+                    <h1>Number of successful transfers:</h1><h1 id="success_count">0</h1>
+                </div>
 
-        </table>
+                <div class="numbers">
+                    <h1>total attempts:</h1><h1 id="total_count">0</h1>
+                </div>
+
+                <div class="numbers">
+                    <h1>efficiency: </h1><h1 id="efficiency">0</h1><h1>%</h1>
+                </div>
+            </div>
+            <div class="container_bottom_right">
+                <div class="numbers">
+                    <h1>transfer speed: </h1><input type="text" id="fname" name="fname">
+                </div>
+
+                <div class="numbers">
+                    <h1>lambda: </h1><input type="text" id="fname" name="fname">
+                </div>
+
+                <div class="numbers">
+                    <h1>time delay from : to </h1>
+                    <input type="text" id="fname" name="fname">
+                    <h1>:</h1>
+                    <input type="text" id="fname" name="fname">
+                </div>
+
+                <div class="numbers">
+                    <h1>frame size :</h1><input type="text" id="fname" name="fname">
+                </div>
+
+                <button type="button">Update</button>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>
