@@ -15,6 +15,9 @@ FRAME_TIME_STEPS=3;
 WAIT_TIME_MILLI_SEC=500;
 TIME_LINE_SLOTS=70;
 
+LAMBDA=6;
+NO_STATIONS=6;
+
 
 SIMULATION_STATE = SimulateState.IN_PROGRESS;
 
@@ -29,10 +32,9 @@ const fact=(x)=>{
 const poisson =(k, lamda)=>{
     var exponential = 2.718281828;
     exponentialPower = Math.pow(exponential, -lamda);
-    landaPowerK = Math.pow(lamda, k);
-    numerator = exponentialPower * landaPowerK;
+    lamdaPowerK = Math.pow(lamda, k);
+    numerator = exponentialPower * lamdaPowerK;
     denominator = fact(k);
-
     return (numerator / denominator);
 }
 
@@ -98,7 +100,7 @@ class ViewController{
 }
 
 class Station{
-    #delayBeforeSending;
+    // #delayBeforeSending;
     #stationId;
     #propagatedFrame
     #transmissionLineData;
@@ -110,11 +112,17 @@ class Station{
         this.#propagatedFrame=0;
         this.#transmissionLineData=Array(transmissionLineSize).fill(0);
         this.#packetState = PacketState.NO_PACKET;
-        this.#resetBackOffTimer();
+        // this.#resetBackOffTimer();
     }
 
     isAvailableToSend(){
-        return (!this.isTransmitting() && this.isBackOffTimeOver())
+        // return (!this.isTransmitting() && this.#isBackOffTimeOver());
+        return (!this.isTransmitting() && this.#checkProbablityToSend());
+    }
+
+
+    #checkProbablityToSend(){
+        return(poisson(NO_STATIONS, LAMBDA) > Math.random());
     }
 
     getNoOfQueuedPackets(){
@@ -138,11 +146,11 @@ class Station{
             if(this.#propagatedFrame === 0)
             {
                 this.#packetState = PacketState.NO_PACKET;
-                this.#updateTime()
+                // this.#updateTime()
             }
         }
         else{
-            this.#updateTime()
+            // this.#updateTime()
             this.#transmissionLineData[0] = PacketState.NO_PACKET;
             this.#packetState = PacketState.NO_PACKET;
             this.#propagatedFrame =0;
@@ -150,22 +158,22 @@ class Station{
         console.log( this.#stationId + " -> " + this.#packetState)
     }
 
-    #updateTime(){
-            // if the station is not transmitting
-            // decreament back off time
-            // update state to no packet being transferred
-            if(this.#delayBeforeSending > 0){
-                this.#delayBeforeSending -= 1;
-            }
-            else{
-                // when timer is over reset it
-                this.#resetBackOffTimer();
-            }
-    }
+    // #updateTime(){
+    //         // if the station is not transmitting
+    //         // decreament back off time
+    //         // update state to no packet being transferred
+    //         if(this.#delayBeforeSending > 0){
+    //             this.#delayBeforeSending -= 1;
+    //         }
+    //         else{
+    //             // when timer is over reset it
+    //             this.#resetBackOffTimer();
+    //         }
+    // }
 
-    #resetBackOffTimer(){
-        this.#delayBeforeSending=Math.floor(Math.random() * MAX_BACKOFF_TIME + MIN_BACKOFF_TIME);
-    }
+    // #resetBackOffTimer(){
+    //     this.#delayBeforeSending=Math.floor(Math.random() * MAX_BACKOFF_TIME + MIN_BACKOFF_TIME);
+    // }
 
     getId(){
         return this.#stationId;
@@ -201,9 +209,9 @@ class Station{
         return this.#packetState;
     }
 
-    isBackOffTimeOver(){
-        return (this.#delayBeforeSending == 0)
-    }
+    // isBackOffTimeOver(){
+    //     return (this.#delayBeforeSending == 0)
+    // }
 };
 
 
@@ -225,6 +233,8 @@ const sleep =(ms)=> {
 const simulateStations = (stations, viewController) =>{
     totalCollisions = 0;
     totalAttempts = 0;
+    effeciencyValues = new Array(1).fill(0);
+    xAxis = new Array(1).fill(1);
     (async () => {
     while(SIMULATION_STATE === SimulateState.IN_PROGRESS){
         collisions=0;
@@ -263,6 +273,13 @@ const simulateStations = (stations, viewController) =>{
         totalCollisions += collisions;
         viewController.updateTransmissionLineView()
         viewController.updateCollisionAndSuccessCount(collisionCount = totalCollisions, successCount = totalAttempts - collisionCount);
+        // if(effeciencyValues.length >= 10){
+        //     effeciencyValues.shift();
+        // }
+        effeciencyValues.push(Math.round((totalAttempts - collisionCount) / totalAttempts * 100.0).toFixed(5));
+        xAxis.push(xAxis[xAxis.length -1] + 1);
+
+        drawPlot(effeciencyValues);
         waitingTime = WAIT_TIME_MILLI_SEC;
         await sleep(waitingTime);
     }})()
@@ -287,27 +304,22 @@ const begin =(noStations)=> {
 
 }
 
-
 const update =()=>{
     (async () => {
         SIMULATION_STATE = SimulateState.STOPPED;
         console.log("updating")
         await sleep(WAIT_TIME_MILLI_SEC + WAIT_TIME_MILLI_SEC + 1000);
         FRAME_TIME_STEPS = parseInt(document.getElementById("frame_size").value);
-        MIN_BACKOFF_TIME = parseInt(document.getElementById("min_time").value);
-        lambda = parseInt(document.getElementById("lambda").value);
-        noStations = parseInt(document.getElementById("no_stations").value);
+        LAMBDA = parseInt(document.getElementById("lambda").value);
+        NO_STATIONS = parseInt(document.getElementById("no_stations").value);
         WAIT_TIME_MILLI_SEC = parseInt(document.getElementById("trns_speed").value);
-        MAX_BACKOFF_TIME = parseInt(document.getElementById("max_time").value);
 
-        let stations = [];
-
-        console.log(FRAME_TIME_STEPS);
-        console.log(MAX_BACKOFF_TIME);
-        console.log(MIN_BACKOFF_TIME);
-        console.log(lambda);
-        console.log(noStations);
-        console.log(WAIT_TIME_MILLI_SEC);
+        console.log("FRAME_TIME_STEPS" + FRAME_TIME_STEPS);
+        console.log("MAX_BACKOFF_TIME" + MAX_BACKOFF_TIME);
+        console.log("MIN_BACKOFF_TIME" + MIN_BACKOFF_TIME);
+        console.log("LAMBDA" + LAMBDA);
+        console.log("NO_STATIONS" + NO_STATIONS);
+        console.log("WAIT_TIME_MILLI_SEC"  + WAIT_TIME_MILLI_SEC);
 
         if(MIN_BACKOFF_TIME > MAX_BACKOFF_TIME){
             MIN_BACKOFF_TIME = 0;
@@ -315,7 +327,26 @@ const update =()=>{
 
         SIMULATION_STATE = SimulateState.IN_PROGRESS;
 
-        begin(noStations);
+        begin(NO_STATIONS);
 
     })();
 }
+
+function drawPlot(yAxis, xAxis){
+    TESTER = document.getElementById('tester');
+    Plotly.newPlot( TESTER, [{
+    x: xAxis,
+    y: yAxis }], {
+    margin: { t: 0 } } );
+}
+
+
+
+// console.log(poisson(4, 4) * 100);
+
+
+// console.log(poisson(20, 0.3));
+// console.log(poisson(6, 6));
+// console.log(poisson(6, 2.0));
+// console.log(poisson(2, 0.9));
+// console.log(poisson(6, 0.6));
