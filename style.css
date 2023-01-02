@@ -17,7 +17,7 @@ table.tranmissionTable td, table.tranmissionTable th {
     position: relative;
     margin: auto;
     width: 100%;
-    background-color: yellow;
+    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -53,4 +53,13 @@ table.tranmissionTable td, table.tranmissionTable th {
     width: 90px;
     height: 40px;
     justify-self: center;
+}
+
+
+#station_img {
+    height: auto;
+    width: auto;
+    max-width: 50px;
+    max-height: 40px;
+    padding: 0;
 }

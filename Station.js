@@ -9,13 +9,14 @@ const SimulateState={
     STOPPED: 1
 }
 
-TRANSMIT_PROBABILITY=60;
+MAX_BACKOFF_TIME=60;
+MIN_BACKOFF_TIME=0;
 FRAME_TIME_STEPS=3;
 WAIT_TIME_MILLI_SEC=500;
 TIME_LINE_SLOTS=70;
 
 
-SIMULATION_STATE = SimulateState.STOPPED;
+SIMULATION_STATE = SimulateState.IN_PROGRESS;
 
 
 const fact=(x)=>{
@@ -57,6 +58,7 @@ class ViewController{
 
         this.#stations.forEach((st)=>{
             let transmission_line = `<tr id="transmission_line${st.getId()}">
+            <td id="station_logo${st.getId()}"><img src="station.png" id="station_img" alt="station${st.getId()}"></td>
             ${line}
             <td id="left_packets${st.getId()}"></td>
             </tr>`
@@ -78,7 +80,7 @@ class ViewController{
     updateTransmissionLineView(){
         this.#stations.forEach((st)=>{
             st.getTransmissionLineData().forEach((packetSlot, index)=>{
-                let slot = document.querySelector(`#transmission_line${st.getId()} td:nth-child(${index+1})`);
+                let slot = document.querySelector(`#transmission_line${st.getId()} td:nth-child(${index+2})`);
                 if(packetSlot == PacketState.IN_PROGRESS_COLLIDED){
                     slot.style.backgroundColor = "red";
                 }
@@ -104,11 +106,11 @@ class Station{
     #noOfQueuedPackets;
     constructor(stationId, transmissionLineSize, noOfQueuedPackets){
         this.#noOfQueuedPackets = noOfQueuedPackets;
-        this.#delayBeforeSending=Math.floor(Math.random() * TRANSMIT_PROBABILITY);
         this.#stationId = stationId;
         this.#propagatedFrame=0;
         this.#transmissionLineData=Array(transmissionLineSize).fill(0);
         this.#packetState = PacketState.NO_PACKET;
+        this.#resetBackOffTimer();
     }
 
     isAvailableToSend(){
@@ -157,8 +159,12 @@ class Station{
             }
             else{
                 // when timer is over reset it
-                this.#delayBeforeSending=Math.floor(Math.random() * TRANSMIT_PROBABILITY);
+                this.#resetBackOffTimer();
             }
+    }
+
+    #resetBackOffTimer(){
+        this.#delayBeforeSending=Math.floor(Math.random() * MAX_BACKOFF_TIME + MIN_BACKOFF_TIME);
     }
 
     getId(){
@@ -263,7 +269,7 @@ const simulateStations = (stations, viewController) =>{
 }
 
 
-const begin =(noStations, lambda, transmit_probability = TRANSMIT_PROBABILITY, fame_size= FRAME_TIME_STEPS, transmissionSpeed = WAIT_TIME_MILLI_SEC)=> {
+const begin =(noStations)=> {
 
     let stations = [];
 
@@ -272,7 +278,6 @@ const begin =(noStations, lambda, transmit_probability = TRANSMIT_PROBABILITY, f
 
     // console.log(stations);
 
-    SIMULATION_STATE = SimulateState.IN_PROGRESS;
     viewController = new ViewController(stations);
 
     viewController.generateTransmissionLine(lineSize=TIME_LINE_SLOTS);
@@ -284,23 +289,33 @@ const begin =(noStations, lambda, transmit_probability = TRANSMIT_PROBABILITY, f
 
 
 const update =()=>{
-    SIMULATION_STATE = SimulateState.STOPPED;
     (async () => {
+        SIMULATION_STATE = SimulateState.STOPPED;
+        console.log("updating")
         await sleep(WAIT_TIME_MILLI_SEC + WAIT_TIME_MILLI_SEC + 1000);
+        FRAME_TIME_STEPS = parseInt(document.getElementById("frame_size").value);
+        MIN_BACKOFF_TIME = parseInt(document.getElementById("min_time").value);
+        lambda = parseInt(document.getElementById("lambda").value);
+        noStations = parseInt(document.getElementById("no_stations").value);
+        WAIT_TIME_MILLI_SEC = parseInt(document.getElementById("trns_speed").value);
+        MAX_BACKOFF_TIME = parseInt(document.getElementById("max_time").value);
+
+        let stations = [];
+
+        console.log(FRAME_TIME_STEPS);
+        console.log(MAX_BACKOFF_TIME);
+        console.log(MIN_BACKOFF_TIME);
+        console.log(lambda);
+        console.log(noStations);
+        console.log(WAIT_TIME_MILLI_SEC);
+
+        if(MIN_BACKOFF_TIME > MAX_BACKOFF_TIME){
+            MIN_BACKOFF_TIME = 0;
+        }
+
         SIMULATION_STATE = SimulateState.IN_PROGRESS;
 
-        FRAME_TIME_STEPS = parseInt(document.getElementById("frame_size"));
-        TRANSMIT_PROBABILITY = parseInt(document.getElementById("max_time"));
-        lambda = parseInt(document.getElementById("lambda"));
-        noStations = parseInt(document.getElementById("no_stations"));
-        WAIT_TIME_MILLI_SEC = parseInt(document.getElementById("trns_speed"));
+        begin(noStations);
 
-        begin(6);
     })();
-
-
-
-
 }
-
-begin(6);
