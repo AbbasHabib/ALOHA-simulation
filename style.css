@@ -15,8 +15,6 @@ table.tranmissionTable td, table.tranmissionTable th {
 .container{
     margin: auto;
     width: 80%;
-    /* height: 500px; */
-    border: 3px solid green;;
 }
 .container_top{
     position: relative;
@@ -84,3 +82,21 @@ table.tranmissionTable td, table.tranmissionTable th {
     margin: auto;
     padding: 20px;
 }
+
+.container_center{
+    height: 400px;
+    position: relative;
+    width: 210px;
+    text-align: center;
+}
+.container_center h1{
+    font-size: 50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    color: white;
+}
+
