@@ -84,13 +84,13 @@ class ViewController{
             st.getTransmissionLineData().forEach((packetSlot, index)=>{
                 let slot = document.querySelector(`#transmission_line${st.getId()} td:nth-child(${index+2})`);
                 if(packetSlot == PacketState.IN_PROGRESS_COLLIDED){
-                    slot.style.backgroundColor = "red";
+                    slot.style.backgroundColor = "#D61C4E";
                 }
                 else if(packetSlot == PacketState.IN_PROGRESS){
-                    slot.style.backgroundColor = "green";
+                    slot.style.backgroundColor = "#38E54D";
                 }
                 else{
-                    slot.style.backgroundColor = "grey";
+                    slot.style.backgroundColor = "#434242";
                 }
                 let inProgressPackets = document.querySelector(`#left_packets${st.getId()}`);
                 inProgressPackets.innerText = st.getNoOfQueuedPackets()
@@ -100,7 +100,6 @@ class ViewController{
 }
 
 class Station{
-    // #delayBeforeSending;
     #stationId;
     #propagatedFrame
     #transmissionLineData;
@@ -112,11 +111,9 @@ class Station{
         this.#propagatedFrame=0;
         this.#transmissionLineData=Array(transmissionLineSize).fill(0);
         this.#packetState = PacketState.NO_PACKET;
-        // this.#resetBackOffTimer();
     }
 
     isAvailableToSend(){
-        // return (!this.isTransmitting() && this.#isBackOffTimeOver());
         return (!this.isTransmitting() && this.#checkProbablityToSend());
     }
 
@@ -146,34 +143,15 @@ class Station{
             if(this.#propagatedFrame === 0)
             {
                 this.#packetState = PacketState.NO_PACKET;
-                // this.#updateTime()
             }
         }
         else{
-            // this.#updateTime()
             this.#transmissionLineData[0] = PacketState.NO_PACKET;
             this.#packetState = PacketState.NO_PACKET;
             this.#propagatedFrame =0;
         }
         console.log( this.#stationId + " -> " + this.#packetState)
     }
-
-    // #updateTime(){
-    //         // if the station is not transmitting
-    //         // decreament back off time
-    //         // update state to no packet being transferred
-    //         if(this.#delayBeforeSending > 0){
-    //             this.#delayBeforeSending -= 1;
-    //         }
-    //         else{
-    //             // when timer is over reset it
-    //             this.#resetBackOffTimer();
-    //         }
-    // }
-
-    // #resetBackOffTimer(){
-    //     this.#delayBeforeSending=Math.floor(Math.random() * MAX_BACKOFF_TIME + MIN_BACKOFF_TIME);
-    // }
 
     getId(){
         return this.#stationId;
@@ -209,9 +187,6 @@ class Station{
         return this.#packetState;
     }
 
-    // isBackOffTimeOver(){
-    //     return (this.#delayBeforeSending == 0)
-    // }
 };
 
 
@@ -273,9 +248,6 @@ const simulateStations = (stations, viewController) =>{
         totalCollisions += collisions;
         viewController.updateTransmissionLineView()
         viewController.updateCollisionAndSuccessCount(collisionCount = totalCollisions, successCount = totalAttempts - collisionCount);
-        // if(effeciencyValues.length >= 10){
-        //     effeciencyValues.shift();
-        // }
         effeciencyValues.push(Math.round((totalAttempts - collisionCount) / totalAttempts * 100.0).toFixed(5));
         xAxis.push(xAxis[xAxis.length -1] + 1);
 
@@ -290,10 +262,7 @@ const begin =(noStations)=> {
 
     let stations = [];
 
-    // createNstation(stations=stations, n=noStations, noPackets=poisson(noStations, 0.2),lineSize=TIME_LINE_SLOTS);
     createNstation(stations=stations, n=noStations, noPackets=1000,lineSize=TIME_LINE_SLOTS);
-
-    // console.log(stations);
 
     viewController = new ViewController(stations);
 
@@ -333,20 +302,9 @@ const update =()=>{
 }
 
 function drawPlot(yAxis, xAxis){
-    TESTER = document.getElementById('tester');
+    TESTER = document.getElementById('diagram_plotter');
     Plotly.newPlot( TESTER, [{
     x: xAxis,
     y: yAxis }], {
     margin: { t: 0 } } );
 }
-
-
-
-// console.log(poisson(4, 4) * 100);
-
-
-// console.log(poisson(20, 0.3));
-// console.log(poisson(6, 6));
-// console.log(poisson(6, 2.0));
-// console.log(poisson(2, 0.9));
-// console.log(poisson(6, 0.6));

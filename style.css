@@ -1,8 +1,13 @@
+body{
+    background-color: #404258;
+}
+
 table.tranmissionTable {
+    background-color: #EEEEEE;
     border-collapse: collapse;
 }
 table.tranmissionTable td, table.tranmissionTable th {
-    border: 1px solid #000000;
+    border: 1px solid #222222;
     width: 30px;
     height: 20px;
 }
@@ -34,11 +39,13 @@ table.tranmissionTable td, table.tranmissionTable th {
 }
 
 .container_bottom .container_bottom_left{
-    background: red;
+    border-radius: 25px;
+    background: #EDEDED;
 }
 
 .container_bottom .container_bottom_right{
-    background: yellow;
+    border-radius: 25px;
+    background: #EDEDED;
 }
 
 .numbers h1{
@@ -65,5 +72,15 @@ table.tranmissionTable td, table.tranmissionTable th {
 }
 
 .diagram_container{
-    border: 2px solid #14a3c7;
+    margin: auto;
+    border-radius: 40px;
+    width: 50%;
+    background-color: #277BC0;
+    text-align: center;
+    color: whitesmoke;
+}
+
+#diagram_plotter{
+    margin: auto;
+    padding: 20px;
 }
