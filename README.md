@@ -1,5 +1,7 @@
 # ALOHA-simulation-js
 pure ALOHA protocol simulation using pure vanilla javascript
+## Try it out !🤾
+[Pure-ALOHA protocol SIM (web page)](https://abbashabib.github.io/ALOHA-simulation/)
 
 ## Project in action 🏃🏼
 
